@@ -1,0 +1,56 @@
+server:
+  port: 8080
+
+spring:
+  banner:
+    location: Banner.txt
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/gym_app}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        show_sql: false
+        type:
+          wrapper_array_handling: ALLOW
+    database: postgresql
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SMTP_USERNAME:local-dev@example.invalid}
+    password: ${SMTP_PASSWORD:local-dev-only}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# MQTT
+mqtt:
+  broker-url: ${BROKER_URL:tcp://localhost:1883}
+
+jwt:
+  # Development-only key. Always override JWT_SECRET outside local development.
+  key: ${JWT_SECRET:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+
+  expirationAccessToken: 604800000
+  expirationRefreshToken: 604800000
+
+# Project Description
+application:
+  title: "gym app"
+  version: "v1.0"
+
+app:
+  admin:
+    email: ${ADMIN_EMAIL:shawaniket420@gmail.com}
+    # Development-only bootstrap password. Existing admin accounts are not reset.
+    password: ${ADMIN_PASSWORD:local-dev-admin-only}
