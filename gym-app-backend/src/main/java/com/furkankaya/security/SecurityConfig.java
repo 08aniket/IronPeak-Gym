@@ -75,6 +75,11 @@ public class SecurityConfig {
                     "/api/v1/renewals/**"
                 ).hasRole(Role.ROLE_ADMIN.getValue())
 
+                .requestMatchers(
+                    "/api/v1/requestPasswordChangeCode",
+                    "/api/v1/verifyPasswordChangeCode"
+                ).hasAuthority(Role.ROLE_ADMIN.getAuthority())
+
                 // ── Catch-all: any other /api/v1/ needs auth ──────────
                 .requestMatchers("/api/v1/**")
                     .hasRole(Role.ROLE_ADMIN.getValue())

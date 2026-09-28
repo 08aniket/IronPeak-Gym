@@ -11,7 +11,7 @@ const PasswordUpdate = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [requiresOwnerCode, setRequiresOwnerCode] = useState(false);
-  const [codeRequested, setCodeRequested] = useState(false);
+  const [step, setStep] = useState("password");
   const [codeVerified, setCodeVerified] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -40,13 +40,17 @@ const PasswordUpdate = () => {
       await axios.post(`${API}/requestPasswordChangeCode`, {}, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      setCodeRequested(true);
+      setStep("verify");
       setCodeVerified(false);
       setVerificationCode("");
       setSuccessMessage("A verification code was sent to the owner email. It expires in 10 minutes.");
     } catch (error) {
       console.error("Verification code error:", error);
-      setErrorMessage("Could not send the code. Check the owner email and SMTP settings, or wait before requesting another code.");
+      if (error.response?.status === 403) {
+        setErrorMessage("This login is not authorized as an admin, so no email was sent. Log out and sign in with the demo admin account.");
+      } else {
+        setErrorMessage("Could not send the code. Check the owner email and SMTP settings, or wait before requesting another code.");
+      }
     } finally {
       setRequestingCode(false);
     }
@@ -75,19 +79,31 @@ const PasswordUpdate = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const validatePasswordFields = () => {
     setSuccessMessage("");
     setErrorMessage("");
 
+    if (!oldPassword) {
+      setErrorMessage("Enter your current password.");
+      return false;
+    }
     if (newPassword !== confirmPassword) {
       setErrorMessage("New passwords do not match.");
-      return;
+      return false;
     }
     if (newPassword.length < 6) {
       setErrorMessage("New password must be at least 6 characters.");
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const continueToCode = () => {
+    if (validatePasswordFields()) setStep("send");
+  };
+
+  const updatePassword = async () => {
+    if (!validatePasswordFields()) return;
     if (requiresOwnerCode && !codeVerified) {
       setErrorMessage("Verify the owner code before changing the admin password.");
       return;
@@ -117,19 +133,55 @@ const PasswordUpdate = () => {
     }
   };
 
+  const handleMemberSubmit = (event) => {
+    event.preventDefault();
+    updatePassword();
+  };
+
   return (
     <PageWrapper>
       <Card>
         <Title>Change Password</Title>
-        <Subtitle>Enter your current password and choose a new one</Subtitle>
-        <form onSubmit={handleSubmit}>
-          {requiresOwnerCode && !codeVerified ? (
+        <Subtitle>
+          {requiresOwnerCode
+            ? step === "password" ? "Step 1 of 3: Choose your new password" : step === "send" ? "Step 2 of 3: Send an owner verification code" : "Step 3 of 3: Verify the code to finish"
+            : "Enter your current password and choose a new one"}
+        </Subtitle>
+        <form onSubmit={handleMemberSubmit}>
+          {!requiresOwnerCode || step === "password" ? (
             <>
-              <VerificationHint>Admin password changes require a code sent to the owner email.</VerificationHint>
-              {!codeRequested ? (
-                <SubmitButton type="button" onClick={requestVerificationCode} disabled={requestingCode}>
-                  {requestingCode ? "Sending code..." : "Send owner verification code"}
+              {requiresOwnerCode && <VerificationHint>Admin password changes require a code sent to the owner email.</VerificationHint>}
+              <Label>Current Password</Label>
+              <Input type="password" placeholder="Current password" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} required />
+              <Label>New Password</Label>
+              <Input type="password" placeholder="New password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+              <Label>Confirm New Password</Label>
+              <Input type="password" placeholder="Confirm new password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+              {requiresOwnerCode ? (
+                <SubmitButton type="button" onClick={continueToCode}>Continue</SubmitButton>
+              ) : (
+                <SubmitButton type="submit" disabled={updatingPassword}>
+                  {updatingPassword ? "Updating..." : "Update Password"}
                 </SubmitButton>
+              )}
+            </>
+          ) : step === "send" ? (
+            <>
+              <VerificationHint>We will send a one-time code to the owner email. Your password fields stay saved for the next step.</VerificationHint>
+              <SubmitButton type="button" onClick={requestVerificationCode} disabled={requestingCode}>
+                {requestingCode ? "Sending code..." : "Send verification code"}
+              </SubmitButton>
+              <SecondaryButton type="button" onClick={() => setStep("password")} disabled={requestingCode}>Back</SecondaryButton>
+            </>
+          ) : (
+            <>
+              {codeVerified ? (
+                <>
+                  <VerificationHint $verified>Owner email verified. Your password is ready to update.</VerificationHint>
+                  <SubmitButton type="button" onClick={updatePassword} disabled={updatingPassword}>
+                    {updatingPassword ? "Updating..." : "Update Password"}
+                  </SubmitButton>
+                </>
               ) : (
                 <>
                   <Label>Owner verification code</Label>
@@ -149,39 +201,9 @@ const PasswordUpdate = () => {
                   <SecondaryButton type="button" onClick={requestVerificationCode} disabled={requestingCode || verifyingCode}>
                     {requestingCode ? "Sending code..." : "Resend code"}
                   </SecondaryButton>
+                  <SecondaryButton type="button" onClick={() => setStep("password")} disabled={verifyingCode}>Back</SecondaryButton>
                 </>
               )}
-            </>
-          ) : (
-            <>
-              {requiresOwnerCode && <VerificationHint $verified>Owner email verified</VerificationHint>}
-              <Label>Current Password</Label>
-              <Input
-                type="password"
-                placeholder="••••••••"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                required
-              />
-              <Label>New Password</Label>
-              <Input
-                type="password"
-                placeholder="••••••••"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-              />
-              <Label>Confirm New Password</Label>
-              <Input
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-              <SubmitButton type="submit" disabled={updatingPassword}>
-                {updatingPassword ? "Updating..." : "Update Password"}
-              </SubmitButton>
             </>
           )}
         </form>
