@@ -1481,10 +1481,10 @@ const LeadViewButton = styled.button`
 const ApprovedSection = styled.div`margin-top:28px;padding-top:18px;border-top:1px solid #1b1b1b;`;
 const ApprovedTitle = styled.h4`margin:0 0 14px;color:#b7f7c7;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;i{margin-right:8px;}`;
 const LeadModalBackdrop = styled.div`
-  position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:3000;padding:24px;
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:flex-start;justify-content:center;z-index:3000;overflow-y:auto;padding:72px 24px 24px;
 `;
 const LeadModal = styled.div`
-  width:min(560px, 100%);max-height:calc(100vh - 48px);max-height:calc(100dvh - 48px);background:#111;border:1px solid #1d1d1d;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,0.35);overflow-y:auto;overscroll-behavior:contain;
+  width:min(560px, 100%);max-height:calc(100vh - 96px);max-height:calc(100dvh - 96px);background:#111;border:1px solid #1d1d1d;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,0.35);overflow-y:auto;overscroll-behavior:contain;
 `;
 const LeadModalHeader = styled.div`
   display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #1d1d1d;background:#141414;
