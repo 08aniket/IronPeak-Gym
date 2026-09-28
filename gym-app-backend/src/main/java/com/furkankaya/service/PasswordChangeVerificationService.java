@@ -42,7 +42,7 @@ public class PasswordChangeVerificationService {
         }
 
         String code = String.format("%06d", secureRandom.nextInt(1_000_000));
-        Challenge challenge = new Challenge(hash(code), now.plusSeconds(CODE_LIFETIME_SECONDS), 0);
+        Challenge challenge = new Challenge(hash(code), now.plusSeconds(CODE_LIFETIME_SECONDS), 0, false);
         challenges.put(adminEmail, challenge);
         try {
             mailService.sendPasswordChangeCode(ownerEmail.trim(), code);
@@ -63,9 +63,12 @@ public class PasswordChangeVerificationService {
             challenges.remove(adminEmail);
             throw new IllegalArgumentException("The verification code is missing or expired. Request a new one.");
         }
+        if (challenge.verified()) {
+            throw new IllegalArgumentException("The verification code has already been verified.");
+        }
 
         if (!MessageDigest.isEqual(challenge.codeHash(), hash(code))) {
-            Challenge updated = new Challenge(challenge.codeHash(), challenge.expiresAt(), challenge.attempts() + 1);
+            Challenge updated = new Challenge(challenge.codeHash(), challenge.expiresAt(), challenge.attempts() + 1, false);
             if (updated.attempts() >= MAX_ATTEMPTS) {
                 challenges.remove(adminEmail, challenge);
             } else {
@@ -74,8 +77,20 @@ public class PasswordChangeVerificationService {
             throw new IllegalArgumentException("The verification code is incorrect or has expired.");
         }
 
+        Challenge verifiedChallenge = new Challenge(challenge.codeHash(), challenge.expiresAt(), challenge.attempts(), true);
+        if (!challenges.replace(adminEmail, challenge, verifiedChallenge)) {
+            throw new IllegalArgumentException("The verification code has expired. Request a new one.");
+        }
+    }
+
+    public void consumeVerifiedCode(String adminEmail) {
+        Challenge challenge = challenges.get(adminEmail);
+        if (challenge == null || Instant.now().isAfter(challenge.expiresAt()) || !challenge.verified()) {
+            challenges.remove(adminEmail);
+            throw new IllegalArgumentException("Verify a current owner code before changing the admin password.");
+        }
         if (!challenges.remove(adminEmail, challenge)) {
-            throw new IllegalArgumentException("The verification code has already been used. Request a new one.");
+            throw new IllegalArgumentException("The verification has expired. Request a new code.");
         }
     }
 
@@ -87,6 +102,6 @@ public class PasswordChangeVerificationService {
         }
     }
 
-    private record Challenge(byte[] codeHash, Instant expiresAt, int attempts) {
+    private record Challenge(byte[] codeHash, Instant expiresAt, int attempts, boolean verified) {
     }
 }

@@ -84,6 +84,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         passwordChangeVerificationService.sendCode(email);
     }
 
+    public void verifyAdminPasswordChangeCode(HttpServletRequest httpServletRequest, String code) {
+        String email = jwtService.resolveRequest(httpServletRequest);
+        User user = userRepository.findByEmail(email);
+        if (user == null || !user.getAuthorities().contains(Role.ROLE_ADMIN)) {
+            throw new AccessDeniedException("Only administrators can verify owner codes.");
+        }
+        passwordChangeVerificationService.verifyCode(email, code);
+    }
+
     public UserResponse createUser(CreateUserRequest request) {
         User user = userConverter.toUser(request);
         userRepository.save(user);
@@ -103,7 +112,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
 
         if (user.getAuthorities().contains(Role.ROLE_ADMIN)) {
-            passwordChangeVerificationService.verifyCode(email, request.verificationCode());
+            passwordChangeVerificationService.consumeVerifiedCode(email);
         }
 
         user.setPassword(passwordEncoderConfig.passwordEncoder().encode(request.newPassword()));

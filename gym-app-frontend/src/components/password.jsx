@@ -12,9 +12,12 @@ const PasswordUpdate = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [requiresOwnerCode, setRequiresOwnerCode] = useState(false);
   const [codeRequested, setCodeRequested] = useState(false);
+  const [codeVerified, setCodeVerified] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [requestingCode, setRequestingCode] = useState(false);
+  const [verifyingCode, setVerifyingCode] = useState(false);
+  const [updatingPassword, setUpdatingPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,18 +35,43 @@ const PasswordUpdate = () => {
   const requestVerificationCode = async () => {
     setSuccessMessage("");
     setErrorMessage("");
-    setLoading(true);
+    setRequestingCode(true);
     try {
       await axios.post(`${API}/requestPasswordChangeCode`, {}, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       setCodeRequested(true);
-      setSuccessMessage("A verification code was sent to the demo owner email. It expires in 10 minutes.");
+      setCodeVerified(false);
+      setVerificationCode("");
+      setSuccessMessage("A verification code was sent to the owner email. It expires in 10 minutes.");
     } catch (error) {
       console.error("Verification code error:", error);
-      setErrorMessage("Could not send the verification code. The owner email and SMTP must be configured on the backend.");
+      setErrorMessage("Could not send the code. Check the owner email and SMTP settings, or wait before requesting another code.");
     } finally {
-      setLoading(false);
+      setRequestingCode(false);
+    }
+  };
+
+  const verifyCode = async () => {
+    setSuccessMessage("");
+    setErrorMessage("");
+    if (!/^\d{6}$/.test(verificationCode)) {
+      setErrorMessage("Enter the six-digit owner verification code.");
+      return;
+    }
+
+    setVerifyingCode(true);
+    try {
+      await axios.post(`${API}/verifyPasswordChangeCode`, { verificationCode }, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      setCodeVerified(true);
+      setSuccessMessage("Owner code verified. You can now change the password.");
+    } catch (error) {
+      console.error("Verification error:", error);
+      setErrorMessage("The code is incorrect or expired. Request a new code and try again.");
+    } finally {
+      setVerifyingCode(false);
     }
   };
 
@@ -60,20 +88,16 @@ const PasswordUpdate = () => {
       setErrorMessage("New password must be at least 6 characters.");
       return;
     }
-    if (requiresOwnerCode && !codeRequested) {
-      setErrorMessage("Request an owner verification code before changing the admin password.");
-      return;
-    }
-    if (requiresOwnerCode && !/^\d{6}$/.test(verificationCode)) {
-      setErrorMessage("Enter the six-digit owner verification code.");
+    if (requiresOwnerCode && !codeVerified) {
+      setErrorMessage("Verify the owner code before changing the admin password.");
       return;
     }
 
-    setLoading(true);
+    setUpdatingPassword(true);
     try {
       const response = await axios.post(
         `${API}/changePassword`,
-        { oldPassword, newPassword, verificationCode: requiresOwnerCode ? verificationCode : undefined },
+        { oldPassword, newPassword },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
 
@@ -81,6 +105,7 @@ const PasswordUpdate = () => {
         setSuccessMessage("Password updated successfully! Redirecting to login...");
         setOldPassword(""); setNewPassword(""); setConfirmPassword("");
         setVerificationCode("");
+        setCodeVerified(false);
         localStorage.clear();
         setTimeout(() => navigate("/login"), 2000);
       }
@@ -88,7 +113,7 @@ const PasswordUpdate = () => {
       console.error("Error:", error);
       setErrorMessage("Failed to update password. Please check your current password.");
     } finally {
-      setLoading(false);
+      setUpdatingPassword(false);
     }
   };
 
@@ -98,36 +123,14 @@ const PasswordUpdate = () => {
         <Title>Change Password</Title>
         <Subtitle>Enter your current password and choose a new one</Subtitle>
         <form onSubmit={handleSubmit}>
-          <Label>Current Password</Label>
-          <Input
-            type="password"
-            placeholder="••••••••"
-            value={oldPassword}
-            onChange={(e) => setOldPassword(e.target.value)}
-            required
-          />
-          <Label>New Password</Label>
-          <Input
-            type="password"
-            placeholder="••••••••"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-          />
-          <Label>Confirm New Password</Label>
-          <Input
-            type="password"
-            placeholder="••••••••"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-          {requiresOwnerCode && (
+          {requiresOwnerCode && !codeVerified ? (
             <>
-              <SubmitButton type="button" onClick={requestVerificationCode} disabled={loading}>
-                {loading ? "Sending code..." : codeRequested ? "Resend owner verification code" : "Send owner verification code"}
-              </SubmitButton>
-              {codeRequested && (
+              <VerificationHint>Admin password changes require a code sent to the owner email.</VerificationHint>
+              {!codeRequested ? (
+                <SubmitButton type="button" onClick={requestVerificationCode} disabled={requestingCode}>
+                  {requestingCode ? "Sending code..." : "Send owner verification code"}
+                </SubmitButton>
+              ) : (
                 <>
                   <Label>Owner verification code</Label>
                   <Input
@@ -140,13 +143,47 @@ const PasswordUpdate = () => {
                     onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
                     required
                   />
+                  <SubmitButton type="button" onClick={verifyCode} disabled={verifyingCode || verificationCode.length !== 6}>
+                    {verifyingCode ? "Verifying code..." : "Verify code"}
+                  </SubmitButton>
+                  <SecondaryButton type="button" onClick={requestVerificationCode} disabled={requestingCode || verifyingCode}>
+                    {requestingCode ? "Sending code..." : "Resend code"}
+                  </SecondaryButton>
                 </>
               )}
             </>
+          ) : (
+            <>
+              {requiresOwnerCode && <VerificationHint $verified>Owner email verified</VerificationHint>}
+              <Label>Current Password</Label>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                required
+              />
+              <Label>New Password</Label>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+              />
+              <Label>Confirm New Password</Label>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+              <SubmitButton type="submit" disabled={updatingPassword}>
+                {updatingPassword ? "Updating..." : "Update Password"}
+              </SubmitButton>
+            </>
           )}
-          <SubmitButton type="submit" disabled={loading}>
-            {loading ? "Updating..." : "Update Password"}
-          </SubmitButton>
         </form>
         {successMessage && <StatusMsg success>{successMessage}</StatusMsg>}
         {errorMessage && <StatusMsg>{errorMessage}</StatusMsg>}
@@ -156,6 +193,25 @@ const PasswordUpdate = () => {
 };
 
 export default PasswordUpdate;
+
+const VerificationHint = styled.p`
+  margin: 0 0 18px;
+  color: ${p => p.$verified ? "#86efac" : "#aaa"};
+  font-size: 0.85rem;
+`;
+
+const SecondaryButton = styled.button`
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid #383838;
+  border-radius: 6px;
+  background: #171717;
+  color: #ccc;
+  font-weight: 700;
+  cursor: pointer;
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+`;
 
 const PageWrapper = styled.div`
   min-height: 100vh;
