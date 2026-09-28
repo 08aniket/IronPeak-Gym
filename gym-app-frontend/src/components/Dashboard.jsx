@@ -1484,7 +1484,7 @@ const LeadModalBackdrop = styled.div`
   position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:3000;padding:24px;
 `;
 const LeadModal = styled.div`
-  width:min(560px, 100%);background:#111;border:1px solid #1d1d1d;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,0.35);overflow:hidden;
+  width:min(560px, 100%);max-height:calc(100vh - 48px);max-height:calc(100dvh - 48px);background:#111;border:1px solid #1d1d1d;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,0.35);overflow-y:auto;overscroll-behavior:contain;
 `;
 const LeadModalHeader = styled.div`
   display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #1d1d1d;background:#141414;
@@ -1495,7 +1495,7 @@ const LeadCloseButton = styled.button`
   width:36px;height:36px;border:none;border-radius:50%;background:#1a1a1a;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;
   &:hover{background:#2a2a2a;}
 `;
-const LeadModalGrid = styled.div`display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:18px 20px;border-bottom:1px solid #1d1d1d;`;
+const LeadModalGrid = styled.div`display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:18px 20px;border-bottom:1px solid #1d1d1d;@media(max-width:600px){grid-template-columns:minmax(0,1fr);}`;
 const LeadModalItem = styled.div`display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:#171717;border:1px solid #212121;border-radius:8px;span{font-size:0.72rem;color:#666;text-transform:uppercase;letter-spacing:0.06em;}strong{font-size:0.86rem;color:#d9d9d9;}`;
 const LeadModalSection = styled.div`padding:18px 20px;h4{margin:0 0 10px;color:#fff;font-size:0.9rem;text-transform:uppercase;letter-spacing:0.08em;}p{margin:0;color:#c4c4c4;line-height:1.7;white-space:pre-wrap;}`;
 const LeadModalFooter = styled.div`padding:18px 20px 20px;border-top:1px solid #1d1d1d;background:#141414;`;
