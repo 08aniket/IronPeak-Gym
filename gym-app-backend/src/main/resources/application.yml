@@ -51,6 +51,6 @@ application:
 
 app:
   admin:
-    email: ${ADMIN_EMAIL:shawaniket420@gmail.com}
+    email: ${ADMIN_EMAIL:demo@ironpeak.example}
     # Development-only bootstrap password. Existing admin accounts are not reset.
-    password: ${ADMIN_PASSWORD:local-dev-admin-only}
+    password: ${ADMIN_PASSWORD:IronPeak-Demo-2026}
