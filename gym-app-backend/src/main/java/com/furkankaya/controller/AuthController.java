@@ -67,6 +67,12 @@ public class AuthController {
 
     }
 
+    @PostMapping("/requestPasswordChangeCode")
+    public ResponseEntity<Void> requestPasswordChangeCode(HttpServletRequest httpServletRequest) {
+        userService.requestAdminPasswordChangeCode(httpServletRequest);
+        return ResponseEntity.accepted().build();
+    }
+
     @PostMapping("/refreshToken")
     public JwtResponseDto refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         return refreshTokenService.findByToken(request.getRefreshToken())

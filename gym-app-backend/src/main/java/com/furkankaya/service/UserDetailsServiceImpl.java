@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -34,6 +35,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final PaymentRepository paymentRepository;
     private final ActivityLogRepository activityLogRepository;
     private final OccupancyEventRepository occupancyEventRepository;
+    private final PasswordChangeVerificationService passwordChangeVerificationService;
 
     @Lazy
     private final JwtService jwtService;
@@ -49,6 +51,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                                   PaymentRepository paymentRepository,
                                   ActivityLogRepository activityLogRepository,
                                   OccupancyEventRepository occupancyEventRepository,
+                                  PasswordChangeVerificationService passwordChangeVerificationService,
                                   @Lazy JwtService jwtService) {
         this.userRepository = userRepository;
         this.measurementRepository = measurementRepository;
@@ -61,6 +64,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.paymentRepository = paymentRepository;
         this.activityLogRepository = activityLogRepository;
         this.occupancyEventRepository = occupancyEventRepository;
+        this.passwordChangeVerificationService = passwordChangeVerificationService;
         this.jwtService = jwtService;
     }
 
@@ -69,6 +73,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email);
+    }
+
+    public void requestAdminPasswordChangeCode(HttpServletRequest httpServletRequest) {
+        String email = jwtService.resolveRequest(httpServletRequest);
+        User user = userRepository.findByEmail(email);
+        if (user == null || !user.getAuthorities().contains(Role.ROLE_ADMIN)) {
+            throw new AccessDeniedException("Only administrators can request owner verification.");
+        }
+        passwordChangeVerificationService.sendCode(email);
     }
 
     public UserResponse createUser(CreateUserRequest request) {
@@ -84,14 +97,19 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserResponse changePassword(HttpServletRequest httpServletRequest, ChangePasswordRequest request) {
         String email = jwtService.resolveRequest(httpServletRequest);
         User user = userRepository.findByEmail(email);
-        if (user.getUsername().equals(email) &&
-                passwordEncoderConfig.passwordEncoder().matches(request.oldPassword(), user.getPassword())) {
-            user.setPassword(passwordEncoderConfig.passwordEncoder().encode(request.newPassword()));
-            userRepository.save(user);
-            mailService.sendMail(user.getEmail(), "Your IronPeak Gym password has been changed.");
-            return userConverter.toUserResponse(user);
+        if (user == null || !user.getUsername().equals(email)
+                || !passwordEncoderConfig.passwordEncoder().matches(request.oldPassword(), user.getPassword())) {
+            throw new RuntimeException("Old password is incorrect.");
         }
-        throw new RuntimeException("Old password is incorrect.");
+
+        if (user.getAuthorities().contains(Role.ROLE_ADMIN)) {
+            passwordChangeVerificationService.verifyCode(email, request.verificationCode());
+        }
+
+        user.setPassword(passwordEncoderConfig.passwordEncoder().encode(request.newPassword()));
+        userRepository.save(user);
+        mailService.sendMail(user.getEmail(), "Your IronPeak Gym password has been changed.");
+        return userConverter.toUserResponse(user);
     }
 
     @Transactional

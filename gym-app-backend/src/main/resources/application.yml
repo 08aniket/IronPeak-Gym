@@ -54,3 +54,6 @@ app:
     email: ${ADMIN_EMAIL:demo@ironpeak.example}
     # Development-only bootstrap password. Existing admin accounts are not reset.
     password: ${ADMIN_PASSWORD:IronPeak-Demo-2026}
+
+password-change:
+  owner-email: ${PASSWORD_CHANGE_OWNER_EMAIL:}

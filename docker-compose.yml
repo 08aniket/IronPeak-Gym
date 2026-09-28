@@ -26,6 +26,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
       SMTP_USERNAME: ${SMTP_USERNAME:-local-dev@example.invalid}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-local-dev-only}
+      PASSWORD_CHANGE_OWNER_EMAIL: ${PASSWORD_CHANGE_OWNER_EMAIL:-}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-shawaniket420@gmail.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-local-dev-admin-only}
     depends_on:

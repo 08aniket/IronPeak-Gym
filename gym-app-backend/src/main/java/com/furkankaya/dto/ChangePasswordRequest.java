@@ -7,5 +7,6 @@ import lombok.Builder;
 @Builder
 public record ChangePasswordRequest(
         @NotBlank String oldPassword,
-        @NotBlank @Size(min = 6, max = 72) String newPassword) {
+        @NotBlank @Size(min = 6, max = 72) String newPassword,
+        String verificationCode) {
 }

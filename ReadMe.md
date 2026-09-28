@@ -136,7 +136,7 @@ Use `docker compose ps` to find the actual host ports assigned to Adminer and MQ
 
 ### Initial admin account
 
-The backend seeds an admin account only when the configured admin email is not already present in the database. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env` **before the first start with an empty/new database**. The seed process does not update an existing account's password; change an existing password through the app or a planned credential-rotation procedure.
+The backend seeds an admin account only when the configured admin email is not already present in the database. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env` **before the first start with an empty/new database**. The seed process does not update an existing account's password; change an existing password through the app or a planned credential-rotation procedure. Admin password changes require a one-time code sent to `PASSWORD_CHANGE_OWNER_EMAIL`.
 
 ## Configuration
 
@@ -152,6 +152,7 @@ The committed [.env.example](.env.example) contains local-only sample values. Co
 | `ADMIN_PASSWORD` | Password used when seeding a new admin | Development-only fallback; existing users are not reset. |
 | `SMTP_USERNAME` | SMTP account username | Example uses an invalid placeholder; email delivery will not work until configured. |
 | `SMTP_PASSWORD` | SMTP credential / app password | Example is not a working mail credential. |
+| `PASSWORD_CHANGE_OWNER_EMAIL` | Mailbox that receives admin password-change codes | Set to the demo owner's email; requires working SMTP settings. |
 | `BROKER_URL` | Backend MQTT broker URL | Compose default is `tcp://mqtt:1883`. |
 | `VITE_API_URL` | Frontend API origin for Vite | Defaults in frontend code to `http://localhost:8080`; set when running the frontend separately or accessing it from another device. |
 

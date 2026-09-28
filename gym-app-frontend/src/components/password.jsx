@@ -9,6 +9,9 @@ const PasswordUpdate = () => {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [requiresOwnerCode, setRequiresOwnerCode] = useState(false);
+  const [codeRequested, setCodeRequested] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,7 +21,31 @@ const PasswordUpdate = () => {
     const token = localStorage.getItem("accessToken");
     if (!token) navigate("/login");
     setAccessToken(token);
+    try {
+      const roles = JSON.parse(localStorage.getItem("userRole") || "[]");
+      setRequiresOwnerCode(roles.includes("ROLE_ADMIN"));
+    } catch {
+      setRequiresOwnerCode(false);
+    }
   }, [navigate]);
+
+  const requestVerificationCode = async () => {
+    setSuccessMessage("");
+    setErrorMessage("");
+    setLoading(true);
+    try {
+      await axios.post(`${API}/requestPasswordChangeCode`, {}, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      setCodeRequested(true);
+      setSuccessMessage("A verification code was sent to the demo owner email. It expires in 10 minutes.");
+    } catch (error) {
+      console.error("Verification code error:", error);
+      setErrorMessage("Could not send the verification code. The owner email and SMTP must be configured on the backend.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,18 +60,27 @@ const PasswordUpdate = () => {
       setErrorMessage("New password must be at least 6 characters.");
       return;
     }
+    if (requiresOwnerCode && !codeRequested) {
+      setErrorMessage("Request an owner verification code before changing the admin password.");
+      return;
+    }
+    if (requiresOwnerCode && !/^\d{6}$/.test(verificationCode)) {
+      setErrorMessage("Enter the six-digit owner verification code.");
+      return;
+    }
 
     setLoading(true);
     try {
       const response = await axios.post(
         `${API}/changePassword`,
-        { oldPassword, newPassword },
+        { oldPassword, newPassword, verificationCode: requiresOwnerCode ? verificationCode : undefined },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
 
       if (response.status === 200) {
         setSuccessMessage("Password updated successfully! Redirecting to login...");
         setOldPassword(""); setNewPassword(""); setConfirmPassword("");
+        setVerificationCode("");
         localStorage.clear();
         setTimeout(() => navigate("/login"), 2000);
       }
@@ -86,6 +122,28 @@ const PasswordUpdate = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
+          {requiresOwnerCode && (
+            <>
+              <SubmitButton type="button" onClick={requestVerificationCode} disabled={loading}>
+                {loading ? "Sending code..." : codeRequested ? "Resend owner verification code" : "Send owner verification code"}
+              </SubmitButton>
+              {codeRequested && (
+                <>
+                  <Label>Owner verification code</Label>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    placeholder="6-digit code"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
+                    required
+                  />
+                </>
+              )}
+            </>
+          )}
           <SubmitButton type="submit" disabled={loading}>
             {loading ? "Updating..." : "Update Password"}
           </SubmitButton>
