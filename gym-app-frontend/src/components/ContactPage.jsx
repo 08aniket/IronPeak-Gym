@@ -26,12 +26,23 @@ function ContactPage() {
     const lastName = rest.join(" ");
 
     try {
-      await axios.post(`${API}/sendEmail`, {
+      await axios.post(`${API}/interest`, {
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: null,
+        age: null,
+        gender: null,
+        fitnessGoal: "Contact inquiry",
+        message: formData.message,
+      });
+
+      // Email is a notification; the saved inquiry remains available in the dashboard.
+      axios.post(`${API}/sendEmail`, {
         firstName: firstName || "",
         lastName: lastName || "",
         email: formData.email,
-        message: formData.message,
-      });
+        message: `Contact inquiry from ${formData.fullName}:\n${formData.message}`,
+      }).catch((error) => console.error("Contact notification failed:", error));
 
       setStatus("success");
       setFormData({ fullName: "", email: "", message: "" });

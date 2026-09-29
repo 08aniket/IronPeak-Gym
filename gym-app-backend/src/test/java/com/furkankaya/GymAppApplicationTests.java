@@ -121,7 +121,7 @@ class GymAppApplicationTests {
 		mockMvc.perform(post("/api/v1/interest")
 					.contentType(MediaType.APPLICATION_JSON)
 					.content("""
-							{"fullName":"Demo Visitor","email":"visitor@example.com","phone":"1234567890","age":"25"}
+							{"fullName":"Contact Visitor","email":"visitor@example.com","fitnessGoal":"Contact inquiry","message":"Please call me about memberships."}
 							"""))
 				.andExpect(status().isOk());
 
