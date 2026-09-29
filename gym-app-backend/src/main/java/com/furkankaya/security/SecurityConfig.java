@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -39,9 +40,9 @@ public class SecurityConfig {
                     "/api/v1/changePassword",
                     "/api/v1/isAllowedToPass",
                     "/api/v1/prices",
-                    "/api/v1/sendEmail",
-                    "/api/v1/interest"
+                    "/api/v1/sendEmail"
                 ).permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/interest").permitAll()
 
                 // ── Swagger / OpenAPI ─────────────────────────────────
                 .requestMatchers(

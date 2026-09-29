@@ -9,6 +9,7 @@ import com.furkankaya.model.Payment;
 import com.furkankaya.model.Role;
 import com.furkankaya.model.User;
 import com.furkankaya.repository.ActivityLogRepository;
+import com.furkankaya.repository.InterestFormRepository;
 import com.furkankaya.repository.OccupancyEventRepository;
 import com.furkankaya.repository.PaymentRepository;
 import com.furkankaya.repository.UserRepository;
@@ -61,11 +62,15 @@ class GymAppApplicationTests {
 	@Autowired
 	private ActivityLogRepository activityLogRepository;
 
+	@Autowired
+	private InterestFormRepository interestFormRepository;
+
 	@BeforeEach
 	void clearTestData() {
 		paymentRepository.deleteAll();
 		occupancyEventRepository.deleteAll();
 		activityLogRepository.deleteAll();
+		interestFormRepository.deleteAll();
 		userRepository.deleteAll();
 	}
 
@@ -107,6 +112,31 @@ class GymAppApplicationTests {
 	@WithMockUser(roles = "ADMIN")
 	void adminCanReadPayments() throws Exception {
 		mockMvc.perform(get("/api/v1/payments"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray());
+	}
+
+	@Test
+	void publicCanSubmitInterestForm() throws Exception {
+		mockMvc.perform(post("/api/v1/interest")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("""
+							{"fullName":"Demo Visitor","email":"visitor@example.com","phone":"1234567890","age":"25"}
+							"""))
+				.andExpect(status().isOk());
+
+		assertThat(interestFormRepository.count()).isEqualTo(1);
+	}
+
+	@Test
+	void memberCannotReadInterestSubmissions() throws Exception {
+		mockMvc.perform(get("/api/v1/interest").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("member").roles("USER")))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void adminCanReadInterestSubmissions() throws Exception {
+		mockMvc.perform(get("/api/v1/interest").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$").isArray());
 	}
