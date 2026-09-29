@@ -5,6 +5,14 @@ import h2 from "../assets/h2.jpg";
 import h3 from "../assets/h3.jpg";
 import h5 from "../assets/h5s.jpg";
 import h4 from "../assets/h4.jpg";
+import coachStrength from "../assets/COACH 1.jpg";
+import coachMobility from "../assets/coach-mobility.jpg";
+import coachConditioning from "../assets/coach-conditioning.jpg";
+import coachYoga from "../assets/Coach 4.jpg";
+import progressLossStart from "../assets/progress-loss-start.jpg";
+import progressLossGoal from "../assets/progress-loss-goal.jpg";
+import progressGainStart from "../assets/progress-gain-start.jpg";
+import progressGainGoal from "../assets/progress-gain-goal.jpg";
 import Footer from "./footer";
 
 const AboutPage = () => {
@@ -24,6 +32,30 @@ const AboutPage = () => {
           <span>TRAIN WITH INTENT</span>
           <p>Strong foundations, smart tools, and a community that keeps showing up.</p>
         </AboutIntro>
+
+        <ImpactSection>
+          <ImpactHeader>
+            <ImpactEyebrow>IRONPEAK / PROOF OF WORK</ImpactEyebrow>
+            <ImpactTitle>Built through consistency.</ImpactTitle>
+            <ImpactCopy>Every number reflects a goal pursued through training, coaching, and community.</ImpactCopy>
+          </ImpactHeader>
+          <ImpactGrid>
+            {[
+              { value: "200+", label: "Transformations", detail: "Member journeys shaped by consistent work", image: progressLossGoal },
+              { value: "60+", label: "Competitions won", detail: "Across strength, conditioning, and fight sports", image: h3 },
+              { value: "5K+", label: "Classes held", detail: "Group training across multiple disciplines", image: h2 },
+              { value: "25+", label: "National athletes", detail: "Athletes supported on their way to the next level", image: progressGainGoal },
+            ].map((item) => (
+              <ImpactCard key={item.label}>
+                <ImpactImage src={item.image} alt="" loading="lazy" />
+                <ImpactShade />
+                <ImpactValue>{item.value}</ImpactValue>
+                <ImpactLabel>{item.label}</ImpactLabel>
+                <ImpactDetail>{item.detail}</ImpactDetail>
+              </ImpactCard>
+            ))}
+          </ImpactGrid>
+        </ImpactSection>
 
         <Timeline>
           <Section>
@@ -119,6 +151,59 @@ const AboutPage = () => {
             <ImageContainer className="about-image"><Image src={h2} alt="Member tracking and progress" /></ImageContainer>
           </Section>
         </Timeline>
+
+        <CoachingSection>
+          <AboutSectionHeader>
+            <AboutEyebrow>THE PEOPLE BEHIND YOUR PROGRESS</AboutEyebrow>
+            <AboutSectionTitle>Coaching for every kind of strong.</AboutSectionTitle>
+            <AboutSectionCopy>Experienced guidance across performance, physique, conditioning, and recovery.</AboutSectionCopy>
+          </AboutSectionHeader>
+          <CoachGrid>
+            {[
+              { name: "Arjun Menon", focus: "Strength & Powerlifting", detail: "National powerlifting medalist · 8+ years coaching", copy: "Technique-first support across powerlifting, Olympic lifts, and body recomposition.", image: coachStrength, alt: "Strength coach Arjun Menon" },
+              { name: "Priya Sharma", focus: "Fat Loss & HIIT", detail: "NASM certified · 200+ client transformations", copy: "Metabolic conditioning and structured plans centered on sustainable fat-loss goals.", image: coachMobility, alt: "Fat loss and HIIT coach Priya Sharma" },
+              { name: "Raunak Verma", focus: "Bodybuilding & Aesthetics", detail: "Men's physique competitor since 2016 · 500+ clients coached", copy: "Progressive muscle-building and physique preparation tailored to each athlete.", image: coachConditioning, alt: "Bodybuilding coach Raunak Verma" },
+              { name: "Sneha Pillai", focus: "Yoga & Recovery", detail: "Certified yoga therapist", copy: "Mobility and recovery practices to help members move well and train consistently.", image: coachYoga, alt: "Yoga and recovery coach Sneha Pillai" },
+            ].map((coach) => (
+              <CoachCard key={coach.name}>
+                <CoachPhoto src={coach.image} alt={coach.alt} loading="lazy" />
+                <CoachInfo>
+                  <CoachFocus>{coach.focus}</CoachFocus>
+                  <CoachName>{coach.name}</CoachName>
+                  <CoachDetail>{coach.detail}</CoachDetail>
+                  <CoachCopy>{coach.copy}</CoachCopy>
+                </CoachInfo>
+              </CoachCard>
+            ))}
+          </CoachGrid>
+          <Disclosure>Strength and yoga portraits were supplied for IronPeak; other coach photos are representative stock images.</Disclosure>
+        </CoachingSection>
+
+        <ResultsSection>
+          <AboutSectionHeader>
+            <AboutEyebrow>MEMBER JOURNEYS</AboutEyebrow>
+            <AboutSectionTitle>Progress, one rep at a time.</AboutSectionTitle>
+            <AboutSectionCopy>Different goals call for different plans. Here are two milestones from the IronPeak community.</AboutSectionCopy>
+          </AboutSectionHeader>
+          <ResultsGrid>
+            {[
+              { name: "Ricky.", focus: "Weight loss + muscle gain", result: "−22 kg", detail: "Lost 22 kg · Muscle gain · 5 months", before: progressLossStart, after: progressGainGoal },
+              { name: "Dexter", focus: "Muscle gain", result: "+26 kg", detail: "Gained 26 kg · Bodybuilding · 4 months", before: progressGainStart, after: progressLossGoal },
+            ].map((story) => (
+              <ResultCard key={story.name}>
+                <ResultPhotos>
+                  <ResultPhoto><img src={story.before} alt="Representative before photo" loading="lazy" /><ResultTag>BEFORE</ResultTag></ResultPhoto>
+                  <ResultPhoto><img src={story.after} alt="Representative after photo" loading="lazy" /><ResultTag>AFTER</ResultTag></ResultPhoto>
+                </ResultPhotos>
+                <ResultInfo>
+                  <div><ResultName>{story.name}</ResultName><ResultFocus>{story.focus}</ResultFocus><ResultDetail>{story.detail}</ResultDetail></div>
+                  <ResultValue>{story.result}</ResultValue>
+                </ResultInfo>
+              </ResultCard>
+            ))}
+          </ResultsGrid>
+          <Disclosure>Before and after photos are representative stock imagery, not photos of Ricky or Dexter. Individual results vary.</Disclosure>
+        </ResultsSection>
       </AboutContainer>
       <Footer />
     </>
@@ -211,6 +296,305 @@ const Image = styled.img`
   width:100%;height:clamp(250px,32vw,410px);object-fit:cover;border-radius:8px;display:block;
   transition:transform .65s cubic-bezier(.2,.7,.2,1),filter .65s ease;filter:saturate(.82) contrast(1.04);
   .about-image:hover &{transform:scale(1.035);filter:saturate(1.08) contrast(1.08);}
+`;
+
+const ImpactSection = styled.section`
+  margin: 0 0 clamp(64px,8vw,96px);
+`;
+
+const ImpactHeader = styled.div`
+  max-width: 720px;
+  margin: 0 auto 30px;
+  text-align: center;
+`;
+
+const ImpactEyebrow = styled.div`
+  margin-bottom: 8px;
+  color: #ff8a36;
+  font-size: .65rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+`;
+
+const ImpactTitle = styled.h2`
+  color: #fff;
+  font-family: 'Oswald',sans-serif;
+  font-size: 2rem;
+  text-transform: uppercase;
+`;
+
+const ImpactCopy = styled.p`
+  margin: 9px 0 0;
+  color: #999;
+  font-size: .84rem;
+  line-height: 1.6;
+`;
+
+const ImpactGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  border: 1px solid #292929;
+  background: #111;
+  @media(max-width:850px){grid-template-columns:repeat(2,minmax(0,1fr));}
+  @media(max-width:520px){grid-template-columns:1fr;}
+`;
+
+const ImpactCard = styled.article`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 230px;
+  overflow: hidden;
+  padding: 24px 14px;
+  border-right: 1px solid #292929;
+  border-bottom: 2px solid #292929;
+  text-align: center;
+  &:hover { border-bottom-color: #ff6b00; }
+  &:hover img { transform: scale(1.05); }
+  @media(max-width:850px){&:nth-child(2n){border-right:0;}}
+  @media(max-width:520px){min-height:220px;border-right:0;}
+`;
+
+const ImpactImage = styled.img`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(.65) brightness(.42);
+  transition: transform .45s ease;
+`;
+
+const ImpactShade = styled.div`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,rgba(0,0,0,.32),rgba(0,0,0,.62));
+`;
+
+const ImpactValue = styled.div`
+  position: relative;
+  z-index: 1;
+  color: #ff7a1a;
+  font-family: 'Oswald',sans-serif;
+  font-size: 2.9rem;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 2px 14px rgba(0,0,0,.8);
+`;
+
+const ImpactLabel = styled.h3`
+  position: relative;
+  z-index: 1;
+  margin: 9px 0 5px;
+  color: #fff;
+  font-family: 'Oswald',sans-serif;
+  font-size: .75rem;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+`;
+
+const ImpactDetail = styled.p`
+  position: relative;
+  z-index: 1;
+  max-width: 220px;
+  margin: 0;
+  color: #bbb;
+  font-size: .68rem;
+  line-height: 1.5;
+`;
+
+const CoachingSection = styled.section`
+  margin: clamp(72px,9vw,110px) 0;
+  padding-top: 60px;
+  border-top: 1px solid #292929;
+`;
+
+const AboutSectionHeader = styled.div`
+  max-width: 700px;
+  margin: 0 auto 34px;
+  text-align: center;
+`;
+
+const AboutEyebrow = styled.div`
+  margin-bottom: 9px;
+  color: #ff8a36;
+  font-size: .65rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+`;
+
+const AboutSectionTitle = styled.h2`
+  color: #fff;
+  font-family: 'Oswald',sans-serif;
+  font-size: 2rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  @media(max-width:600px){font-size:1.65rem;}
+`;
+
+const AboutSectionCopy = styled.p`
+  margin: 10px 0 0;
+  color: #999;
+  font-size: .86rem;
+  line-height: 1.6;
+`;
+
+const CoachGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 14px;
+  @media(max-width:900px){grid-template-columns:repeat(2,minmax(0,1fr));}
+  @media(max-width:540px){grid-template-columns:1fr;}
+`;
+
+const CoachCard = styled.article`
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #303030;
+  border-radius: 4px;
+  background: #141414;
+`;
+
+const CoachPhoto = styled.img`
+  display: block;
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+  object-position: center 35%;
+  filter: saturate(.78) contrast(1.04);
+`;
+
+const CoachInfo = styled.div`
+  padding: 18px 16px 20px;
+`;
+
+const CoachFocus = styled.div`
+  margin-bottom: 7px;
+  color: #ff8a36;
+  font-size: .62rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+`;
+
+const CoachName = styled.h3`
+  margin: 0 0 6px;
+  color: #fff;
+  font-family: 'Oswald',sans-serif;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+`;
+
+const CoachDetail = styled.div`
+  margin-bottom: 10px;
+  color: #c17a44;
+  font-size: .67rem;
+  line-height: 1.5;
+`;
+
+const CoachCopy = styled.p`
+  margin: 0;
+  color: #999;
+  font-size: .75rem;
+  line-height: 1.6;
+`;
+
+const ResultsSection = styled.section`
+  margin: 0 0 30px;
+  padding-top: 60px;
+  border-top: 1px solid #292929;
+`;
+
+const ResultsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 18px;
+  @media(max-width:700px){grid-template-columns:1fr;}
+`;
+
+const ResultCard = styled.article`
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #303030;
+  border-radius: 4px;
+  background: #151515;
+`;
+
+const ResultPhotos = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  height: 230px;
+  @media(max-width:500px){height:200px;}
+`;
+
+const ResultPhoto = styled.div`
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  background: #222;
+  & + & { border-left: 2px solid #ff6b00; }
+  img { display:block;width:100%;height:100%;object-fit:cover;filter:saturate(.75) brightness(.78); }
+`;
+
+const ResultTag = styled.span`
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  color: #fff;
+  font-size: .6rem;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+  text-shadow: 0 1px 8px #000;
+`;
+
+const ResultInfo = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px;
+  @media(max-width:420px){align-items:flex-start;flex-direction:column;}
+`;
+
+const ResultName = styled.div`
+  margin-bottom: 4px;
+  color: #fff;
+  font-family: 'Oswald',sans-serif;
+  font-size: 1rem;
+  text-transform: uppercase;
+`;
+
+const ResultFocus = styled.div`
+  margin-bottom: 4px;
+  color: #ff8a36;
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+`;
+
+const ResultDetail = styled.p`
+  margin: 0;
+  color: #999;
+  font-size: .68rem;
+`;
+
+const ResultValue = styled.strong`
+  flex: 0 0 auto;
+  color: #ff7a1a;
+  font-family: 'Oswald',sans-serif;
+  font-size: 1.9rem;
+  line-height: 1;
+`;
+
+const Disclosure = styled.p`
+  margin: 16px 0 0;
+  color: #777;
+  font-size: .67rem;
+  line-height: 1.55;
+  text-align: center;
 `;
 
 export default AboutPage;
