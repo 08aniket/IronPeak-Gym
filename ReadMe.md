@@ -2,7 +2,9 @@
 
 A full-stack gym management prototype with an admin dashboard, member portal, payment and membership tracking, interest-form lead management, and ESP32/MFRC522 NFC access hardware. The web application is composed of a React/Vite frontend and a Spring Boot REST API backed by PostgreSQL. Docker Compose also starts an MQTT broker for UUID delivery to the card-writing ESP32.
 
-> **Prototype / security notice:** This repository is suitable for local development and controlled demonstrations. Do not expose it to the public internet or use it to control a real gym entrance without completing the security work listed in [Security and prototype limitations](#security-and-prototype-limitations). The example environment values are not production credentials.
+> **Live demo:** [Open IronPeak Gym on Railway](https://ironpeak-gym-demo.up.railway.app/). This public demo is for evaluation only; do not submit real member or payment data.
+>
+> **Prototype / security notice:** This project is not production-ready and must not control a real gym entrance. Complete the security work listed in [Security and prototype limitations](#security-and-prototype-limitations) before production use. Example environment values are not production credentials.
 
 ## Contents
 
@@ -383,7 +385,7 @@ This is a prototype and requires security work before real-world or internet-fac
 - The example `.env` values and application fallbacks are development-only. Set unique production secrets and credentials outside source control.
 - Credentials that were previously committed or shared must be rotated; moving them to environment variables does not invalidate them.
 - The current security configuration permits `/api/v1/isAllowedToPass` without authentication. Add device authentication and request signing before connecting a live door/access controller.
-- The current security matcher permits `GET /api/v1/interest` without authentication, despite the controller comment describing it as admin-only. Protect lead data before deployment.
+- The current security matcher permits `GET /api/v1/interest` without authentication, despite the controller comment describing it as admin-only. Protect lead data before collecting real submissions or broader deployment.
 - Mosquitto is configured with anonymous access and the MQTT port is published. Do not expose this broker to an untrusted network; configure broker authentication and topic restrictions.
 - The sketches use the default MIFARE Classic key and send the UUID over HTTP. These are not secure credentials or encrypted transport; use secure card/device protocols and HTTPS for production.
 - The frontend Compose image runs Vite's development server, not a production static server. Build and serve a production frontend separately for deployment.
