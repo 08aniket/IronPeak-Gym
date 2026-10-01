@@ -52,6 +52,17 @@ const stats = [
 
 const FRAME_COUNT = 232;
 
+function drawFrameCover(canvas, image) {
+  if (!canvas || !image?.naturalWidth || !image?.naturalHeight) return;
+
+  const context = canvas.getContext('2d');
+  const scale = Math.max(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight);
+  const width = image.naturalWidth * scale;
+  const height = image.naturalHeight * scale;
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(image, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height);
+}
+
 export default function CinematicScroll() {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
@@ -77,8 +88,7 @@ export default function CinematicScroll() {
       img.src = `https://ironpeak-gym-gray.vercel.app/frames/frame_${numStr}.jpg`;
       img.onload = () => {
         if (i === 1 && canvasRef.current) {
-          const ctx = canvasRef.current.getContext('2d');
-          ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
+          drawFrameCover(canvasRef.current, img);
         }
       };
       loadedImages.push(img);
@@ -92,8 +102,7 @@ export default function CinematicScroll() {
     const idx = Math.min(FRAME_COUNT - 1, Math.max(0, Math.floor(latestFrame) - 1));
     const img = images[idx];
     if (img && img.complete) {
-      const canvas = canvasRef.current;
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      drawFrameCover(canvasRef.current, img);
     }
     setCurrentFrameText(Math.floor(latestFrame).toString().padStart(3, '0'));
 
@@ -110,11 +119,12 @@ export default function CinematicScroll() {
   useEffect(() => {
     const resize = () => {
       if (!canvasRef.current) return;
-      canvasRef.current.width = window.innerWidth;
-      canvasRef.current.height = window.innerHeight;
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      canvasRef.current.width = Math.round(window.innerWidth * pixelRatio);
+      canvasRef.current.height = Math.round(window.innerHeight * pixelRatio);
       const idx = Math.min(FRAME_COUNT - 1, Math.max(0, Math.floor(frameIndex.get()) - 1));
       if (images[idx]?.complete) {
-        canvasRef.current.getContext('2d').drawImage(images[idx], 0, 0, canvasRef.current.width, canvasRef.current.height);
+        drawFrameCover(canvasRef.current, images[idx]);
       }
     };
     resize();
@@ -269,6 +279,7 @@ const CentralTextContainer = styled.div`
   pointer-events: none;
   width: 100%;
   padding: 0;
+  @media(max-width:600px){position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);padding:0 14px;}
 `;
 
 const PremiumTag = styled.div`
@@ -283,6 +294,7 @@ const PremiumTag = styled.div`
   padding: 5px 22px;
   margin-bottom: 12px;
   text-transform: uppercase;
+  @media(max-width:600px){font-size:.48rem;letter-spacing:2px;padding:5px 10px;}
 `;
 
 const MassiveText = styled.h1`
@@ -295,6 +307,7 @@ const MassiveText = styled.h1`
   color: ${p => p.$colored ? '#ff2a2a' : '#ffffff'};
   letter-spacing: 3px;
   text-shadow: 0 4px 30px rgba(0,0,0,0.9);
+  @media(max-width:600px){font-size:clamp(2.35rem,11vw,3.5rem);letter-spacing:1px;}
 `;
 
 const SubTag = styled.div`
@@ -302,6 +315,7 @@ const SubTag = styled.div`
   color: #ddd;
   margin-top: 14px;
   letter-spacing: 0.5px;
+  @media(max-width:600px){font-size:.78rem;margin-top:9px;}
 `;
 
 const JourneyButton = styled.button`
@@ -318,6 +332,7 @@ const JourneyButton = styled.button`
   pointer-events: auto;
   transition: background 0.3s;
   &:hover { background: rgba(255,42,42,0.12); }
+  @media(max-width:600px){margin-top:14px;padding:8px 18px;font-size:.6rem;letter-spacing:1.5px;}
 `;
 
 const ScrollHint = styled.div`
@@ -328,6 +343,7 @@ const ScrollHint = styled.div`
   text-shadow: 0 1px 8px #000;
   text-transform: uppercase;
   line-height: 1.8;
+  @media(max-width:600px){margin-top:14px;font-size:.48rem;letter-spacing:2px;}
 `;
 
 const ScrollArrows = styled.span`
@@ -347,7 +363,7 @@ const StickyChapter = styled.div`
   top: 55%;
   transform: translateY(-50%);
   z-index: 20;
-  @media (max-width: 768px) { left: 14px; width: calc(100% - 28px); }
+  @media(max-width:768px){left:14px;top:auto;bottom:16px;width:min(260px,calc(100% - 28px));transform:none;}
 `;
 
 const ChapterBox = styled.div`
@@ -356,7 +372,7 @@ const ChapterBox = styled.div`
   padding: 28px 32px 34px;
   width: 320px;
   backdrop-filter: blur(10px);
-  @media (max-width: 768px) { width: 100%; padding: 18px; }
+  @media(max-width:768px){width:100%;padding:14px 16px;}
 `;
 
 const ChapterHeader = styled.div`
@@ -382,6 +398,7 @@ const ChapterTitle = styled.h2`
   text-transform: uppercase;
   letter-spacing: 0.5px;
   line-height: 1.1;
+  @media(max-width:600px){font-size:1.05rem;}
 `;
 
 const ChapterSubtitle = styled.div`
@@ -389,6 +406,7 @@ const ChapterSubtitle = styled.div`
   font-size: 0.78rem;
   line-height: 1.5;
   margin-bottom: 14px;
+  @media(max-width:600px){font-size:.68rem;margin-bottom:8px;}
 `;
 
 const FeaturesList = styled.ul`
@@ -399,6 +417,7 @@ const FeaturesList = styled.ul`
     color: #888;
     font-size: 0.75rem;
     margin-bottom: 7px;
+    @media(max-width:600px){font-size:.63rem;margin-bottom:4px;}
     &::before {
       content: '';
       position: absolute; left: 0; top: 6px;
